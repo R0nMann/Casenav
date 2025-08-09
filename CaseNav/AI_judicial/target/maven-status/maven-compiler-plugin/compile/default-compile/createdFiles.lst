@@ -1,0 +1,5 @@
+com\judicial\model\Case.class
+com\judicial\repository\CaseRepository.class
+com\judicial\controller\CaseController.class
+com\judicial\JudicialApplication.class
+com\judicial\service\CaseService.class
