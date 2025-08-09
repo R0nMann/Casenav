@@ -6,6 +6,7 @@ function caseCard(bgColorHov,caseID, Title, Type, bgColor, Urgency, DaysPending)
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full ${bgColor} text-white">${Urgency}</span>
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Pending</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${DaysPending}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <button class="text-indigo-600 hover:text-indigo-900 mr-4">Review</button>
