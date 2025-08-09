@@ -14,6 +14,7 @@ function caseCard(bgColorHov,caseID, Title, Type, bgColor, Urgency, DaysPending)
                         </tr>`;
     document.getElementsByTagName("tbody")[0].innerHTML = document.getElementsByTagName("tbody")[0].innerHTML +html;
 }
-caseCard("hover:bg-orange-50","2023-FA-342","Child Custody Dispute","Family","bg-orange-500","High","15")
-caseCard("hover:bg-yellow-50","2023-FA-343","Child Custody Dispute","Family","bg-yellow-500","Medium","8")
-caseCard("hover:bg-green-50","2023-FA-344","Child Custody Dispute","Family","bg-green-500","Low","3")
+caseCard("hover:bg-red-50","2023-CR-152","State vs. John Doe (Homicide)","Criminal","bg-red-500","CRITICAL","8")
+caseCard("hover:bg-orange-50","2023-FA-342","Child Custody Dispute","Family","bg-orange-500","HIGH","15")
+caseCard("hover:bg-yellow-50","2023-FA-343","Child Custody Dispute","Family","bg-yellow-500","MEDIUM","8")
+caseCard("hover:bg-green-50","2023-FA-344","Child Custody Dispute","Family","bg-green-500","LOW","3")
