@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CASENAV</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,7 +11,12 @@
         .urgency-4 { border-left: 6px solid #f97316; } 
         .urgency-3 { border-left: 6px solid #eab308; } 
         .urgency-2 { border-left: 6px solid #22c55e; } 
-        .urgency-1 { border-left: 6px solid #64748b; } 
+        .urgency-1 { border-left: 6px solid #64748b; }
+
+        .badge-high { background-color: #ef4444; }  /* red */
+        .badge-medium { background-color: #f97316; } /* orange */
+        .badge-low { background-color: #22c55e; }    /* green */
+        .badge-default { background-color: #64748b; } /* gray */
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -36,15 +41,15 @@
         <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="bg-white p-6 rounded-lg shadow">
                 <h3 class="text-gray-500">Critical Cases</h3>
-                <p class="text-3xl font-bold text-red-500">12</p>
+                <p class="text-3xl font-bold text-red-500" id="critical-cases-count">0</p>
             </div>
             <div class="bg-white p-6 rounded-lg shadow">
                 <h3 class="text-gray-500">High Priority</h3>
-                <p class="text-3xl font-bold text-orange-500">24</p>
+                <p class="text-3xl font-bold text-orange-500" id="high-priority-count">0</p>
             </div>
             <div class="bg-white p-6 rounded-lg shadow">
                 <h3 class="text-gray-500">Total Backlog</h3>
-                <p class="text-3xl font-bold text-blue-500">142</p>
+                <p class="text-3xl font-bold text-blue-500" id="total-backlog-count">0</p>
             </div>
             <div class="bg-white p-6 rounded-lg shadow">
                 <h3 class="text-gray-500">AI Accuracy</h3>
@@ -64,17 +69,18 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Urgency</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days Pending</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200" id="cases-table-body">
+                        <!-- Rows go here -->
                     </tbody>
                 </table>
             </div>
         </section>
 
+        <!-- Charts placeholders -->
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div class="bg-white p-6 rounded-lg shadow-lg">
                 <h3 class="text-lg font-semibold mb-4">Case Backlog by Type</h3>
@@ -82,10 +88,87 @@
             </div>
             <div class="bg-white p-6 rounded-lg shadow-lg">
                 <h3 class="text-lg font-semibold mb-4">Urgency Distribution</h3>
-                <canvas id="urgencyChart height="300"></canvas>
+                <canvas id="urgencyChart" height="300"></canvas>
             </div>
         </section>
     </main>
-    <script src="cases.js"></script>
+
+    <script>
+        // Map urgency level to badge styles and priority counts
+        function getUrgencyBadge(urgency) {
+            switch ((urgency || '').toLowerCase()) {
+                case 'critical':
+                    return { className: 'badge-high', display: 'CRITICAL' };
+                case 'high':
+                    return { className: 'badge-high', display: 'HIGH' };
+                case 'medium':
+                    return { className: 'badge-medium', display: 'MEDIUM' };
+                case 'low':
+                    return { className: 'badge-low', display: 'LOW' };
+                default:
+                    return { className: 'badge-default', display: urgency || 'N/A' };
+            }
+        }
+
+        // Load cases from API and update table and counters
+        async function loadCases() {
+            try {
+                const res = await fetch('http://localhost:8080/api/cases/prioritized');
+                if (!res.ok) throw new Error('Network response was not ok');
+
+                const cases = await res.json();
+
+                const tbody = document.getElementById('cases-table-body');
+                tbody.innerHTML = ''; // Clear existing rows
+
+                // Counters
+                let criticalCount = 0;
+                let highPriorityCount = 0;
+                let totalBacklog = 0;
+
+                cases.forEach(c => {
+                    // Count backlog
+                    totalBacklog += c.pendingDays || 0;
+
+                    // Count critical/high priority cases
+                    const urgency = (c.urgencyLevel || '').toLowerCase();
+                    if (urgency === 'critical') criticalCount++;
+                    if (urgency === 'high') highPriorityCount++;
+
+                    const badge = getUrgencyBadge(c.urgencyLevel);
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${c.caseId}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${c.caseId} - ${c.caseType}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.caseType}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full text-white ${badge.className}">${badge.display}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${c.pendingDays}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="text-indigo-600 hover:text-indigo-900 mr-4">Review</button>
+                            <button class="text-green-600 hover:text-green-900">Assign</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Update counts in dashboard cards
+                document.getElementById('critical-cases-count').textContent = criticalCount;
+                document.getElementById('high-priority-count').textContent = highPriorityCount;
+                document.getElementById('total-backlog-count').textContent = totalBacklog;
+
+            } catch (error) {
+                console.error('Failed to load cases:', error);
+                const tbody = document.getElementById('cases-table-body');
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red-600 py-4">Failed to load cases</td></tr>`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadCases);
+    </script>
 </body>
-</html>    
+</html>

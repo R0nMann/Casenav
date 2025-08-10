@@ -1,3 +1,4 @@
+// Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -11,6 +12,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+// Intersection observer for fade-in animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -25,6 +27,8 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.card-hover, .fade-in').forEach(el => {
     observer.observe(el);
 });
+
+// Ripple effect on buttons
 document.querySelectorAll('button').forEach(button => {
     button.addEventListener('click', function () {
         const ripple = document.createElement('span');
@@ -49,13 +53,52 @@ document.querySelectorAll('button').forEach(button => {
         }, 600);
     });
 });
+
 const style = document.createElement('style');
 style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-        `;
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+`;
 document.head.appendChild(style);
+
+// Create a case row in the table
+function caseCard(bgColorHov, caseID, Title, Type, bgColor, Urgency, DaysPending) {
+    let html = `<tr class="${bgColorHov}">
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${caseID}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${Title}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${Type}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 text-xs font-semibold rounded-full ${bgColor} text-white">${Urgency}</span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${DaysPending}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <button class="text-indigo-600 hover:text-indigo-900 mr-4">Review</button>
+            <button class="text-green-600 hover:text-green-900">Assign</button>
+        </td>
+    </tr>`;
+    document.querySelector("tbody").innerHTML += html;
+}
+
+// Map urgency to colors
+function getUrgencyDetails(urgency) {
+    switch(urgency?.toLowerCase()) {
+        case 'high':
+        case 'critical':
+            return { bgColorHov: "hover:bg-red-50", bgColor: "bg-red-500" };
+        case 'medium':
+            return { bgColorHov: "hover:bg-yellow-50", bgColor: "bg-yellow-500" };
+        case 'low':
+            return { bgColorHov: "hover:bg-green-50", bgColor: "bg-green-500" };
+        default:
+            return { bgColorHov: "hover:bg-gray-50", bgColor: "bg-gray-500" };
+    }
+}
+
+// *** REMOVED loadCases function and event listener ***
+
+// You can manually add rows by calling caseCard() like this:
+// caseCard("hover:bg-red-50", "C101", "Sample Case Title", "Civil", "bg-red-500", "HIGH", 120);
